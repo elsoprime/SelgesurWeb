@@ -1,0 +1,149 @@
+---
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {ServicesPageSchema} from '@/types'
+import {wordpressApi} from '@/api/wordpress'
+
+import {
+  Building,
+  Mail,
+  Shield,
+  PersonStandingIcon,
+  Phone,
+  User,
+  GrapeIcon,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  Award,
+  BellElectric,
+  Settings,
+  BarChart3,
+  FileText,
+  Eye,
+  Wrench
+} from '@lucide/astro'
+
+/*
+  @description Usar el servicio de WordPress para obtener los datos
+  @author Esteban Soto Ojeda @elsoprimeDev
+*/
+let data: typeof ServicesPageSchema._type
+try {
+  const pageData = await wordpressApi.getServicesPage()
+  data = ServicesPageSchema.parse(pageData)
+  //  console.log('Datos de la página servicios cargados:', data)
+} catch (error) {
+  console.error('Error al cargar la página servicios:', error)
+  // Manejo de error - podrías redirigir o mostrar un mensaje
+  throw new Error('No se pudo cargar la información de la página')
+}
+// Generar las claves dinámicamente para los servicios
+const servicesKeys = Array.from({length: 1}, (_, i) => `services_${i + 1}`)
+// Obtener las claves de las actividades desde los datos reales
+const activitiesKeys = Object.keys(data.acf.activities)
+---
+
+<section class=''>
+  <!-- Sección de Título y Descripción -->
+  <div class='border-b-1 border-amber-400 pb-8 mb-16'>
+    <!-- Main Content -->
+    <h2 class='text-5xl text-amber-400 font-black text-center mb-10'>
+      Conoce más acerca de nuestros servicios
+      <span class='block text-4xl text-sky-500 font-bold py-4'
+        >{data.acf.section_title}
+      </span>
+    </h2>
+  </div>
+  <!-- Servicios Destacados -->
+  <div class='mb-20'>
+    {
+      servicesKeys.map(async (key, i) => {
+        const {title, description, image} = data.acf[key]
+        const {width, height} = await inferRemoteSize(image)
+
+        return (
+          <div class='bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 md:p-12 border border-blue-100'>
+            <div class='flex flex-col lg:flex-row items-center gap-8'>
+              {/* Imagen del servicio */}
+              {image && (
+                <div class='lg:w-1/2 w-full'>
+                  <Picture
+                    src={data.acf[key].image}
+                    alt={`Imagen del ${title}`}
+                    width={width}
+                    height={height}
+                    formats={['avif', 'webp', 'jpeg']}
+                  />
+                </div>
+              )}
+
+              {/* Contenido del servicio */}
+              <div
+                class={`${image ? 'lg:w-1/2' : 'w-full'} w-full text-center lg:text-left`}
+              >
+                <div class='mb-4'>
+                  <span class='inline-block px-4 py-2 bg-amber-400 text-white text-sm font-medium rounded-full'>
+                    ⚡ Servicios Destacado
+                  </span>
+                </div>
+
+                <h3 class='text-3xl lg:text-4xl font-bold mb-6 text-gray-800 leading-tight'>
+                  {title}
+                </h3>
+
+                <p class='text-gray-600 text-lg leading-relaxed mb-6'>
+                  {description}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      })
+    }
+  </div>
+
+  <!-- Título de Actividades -->
+  <div class='mt-20 mb-12'>
+    <h2 class='text-4xl font-bold text-center text-gray-800 mb-4'>
+      Actividades Realizadas
+    </h2>
+  </div>
+
+  <!-- Grid de Actividades -->
+  <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16'>
+    {
+      activitiesKeys.map((activityKey, i) => {
+        const {title, description} = data.acf.activities[activityKey]
+
+        // Array de componentes de iconos Lucide para cada actividad
+        const IconComponents = [
+          BellElectric, // Operación
+          BarChart3, // Lectura de Datos
+          Settings, // Mantenimientos Preventivos
+          Building, // Actividades de Distribución
+          FileText, // Lectura y Reparto de Boletas
+          Eye // Supervisión Técnica
+        ]
+
+        const IconComponent = IconComponents[i] || BellElectric
+
+        return (
+          <div class='bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 p-8 text-center border border-gray-100 hover:border-blue-200 group'>
+            {/* Icono */}
+            <div class='w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full flex items-center justify-center group-hover:from-blue-100 group-hover:to-blue-200 transition-all duration-300'>
+              <IconComponent class='w-8 h-8 text-blue-600 group-hover:text-blue-700 transition-colors duration-300' />
+            </div>
+
+            {/* Título */}
+            <h3 class='text-xl font-semibold mb-4 text-gray-800 group-hover:text-blue-600 transition-colors duration-300'>
+              {title}
+            </h3>
+
+            {/* Descripción */}
+            <p class='text-gray-600 text-sm leading-relaxed'>{description}</p>
+          </div>
+        )
+      })
+    }
+  </div>
+</section>

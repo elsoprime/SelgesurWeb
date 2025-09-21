@@ -1,0 +1,37 @@
+---
+// Importaciones necesarias
+import Layout from '@/layouts/Layout.astro'
+import {AboutPageSchema} from '@/types'
+import {wordpressApi} from '@/api/wordpress'
+
+/// Importar componentes
+import SectionPageAbout from '@/components/about/SectionPageAbout.astro'
+import MemberSection from '@/components/about/MemberSection.astro'
+
+/*
+  @description Usar el servicio de WordPress para obtener los datos
+  @author Esteban Soto Ojeda @elsoprimeDev
+*/
+let data: typeof AboutPageSchema._type
+try {
+  const pageData = await wordpressApi.getAboutPage()
+  data = AboutPageSchema.parse(pageData)
+  //  console.log('Datos de la página nosotros cargados:', data)
+} catch (error) {
+  console.error('Error al cargar la página nosotros:', error)
+  // Manejo de error - podrías redirigir o mostrar un mensaje
+  throw new Error('No se pudo cargar la información de la página')
+}
+---
+
+<!-- Usar el layout principal y pasar los datos obtenidos -->
+<Layout
+  title={data.title.rendered}
+  subtitle={data.acf.subtitle}
+  bgImage={data.featured_images.full.url}
+>
+  <!-- Bloque de la seccion Nosotros [Mision, Vision, Valores] -->
+  <SectionPageAbout />
+  <!-- Bloque de la seccion estructura organizacional -->
+  <MemberSection />
+</Layout>

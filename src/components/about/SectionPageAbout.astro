@@ -1,0 +1,74 @@
+---
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {AboutPageSchema} from '@/types'
+import {wordpressApi} from '@/api/wordpress'
+
+/**
+ * Obtener y validar los datos de la página "Nosotros" desde WordPress
+ * Fetch and validate "About Us" page data from WordPress
+ */
+let data: typeof AboutPageSchema._type
+try {
+  const pageData = await wordpressApi.getAboutPage()
+  data = AboutPageSchema.parse(pageData)
+
+  //  console.log('Datos de la página nosotros cargados:', data)
+} catch (error) {
+  console.error('Error al cargar la página nosotros:', error)
+  // Manejo de error - podrías redirigir o mostrar un mensaje
+  throw new Error('No se pudo cargar la información de la página')
+}
+const proccesKeys = Array.from({length: 4}, (_, i) => `block_${i + 1}`)
+---
+
+<section class={'pb-20'}>
+  <!-- Sección de Introducción -->
+  <div class='flex flex-col items-center'>
+    <h2 class='text-5xl text-amber-400 font-black text-center mb-10'>
+      {data.acf.section_header}
+      <span class='block text-4xl text-sky-500 font-bold py-4'
+        >{data.acf.subtitle}
+      </span>
+    </h2>
+    <div
+      class='mt-10 lg:mt-8 text-xl text-gray-700 font-light text-justify'
+      set:html={data.content.rendered}
+    />
+  </div>
+  <!-- Contenido acerca de Misión y Visión -->
+  <div class='mt-10 space-y-10'>
+    {
+      proccesKeys.map(async (key, i) => {
+        const {title, description, image} = data.acf[key]
+        const {width, height} = await inferRemoteSize(image)
+
+        return (
+          <div class='flex gap-10 flex-col lg:flex-row items-center'>
+            <div
+              class={`w-full lg:w-1/3 ${i % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}
+            >
+              <Picture
+                src={data.acf[key].image}
+                alt={`Imagen del ${title}`}
+                width={width}
+                height={height}
+                class={`${['block_1', 'block_2'].includes(key) ? 'rounded-full' : 'rounded-lg'} w-full h-auto shadow-lg`}
+                formats={['avif', 'webp', 'jpeg']}
+              />
+            </div>
+            <div
+              class={`w-full lg:w-1/2 ${i % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}
+            >
+              <h3 class='text-4xl text-amber-400 font-black text-center mb-10'>
+                {title}
+              </h3>
+              <p class='text-sm lg:text-xl text-gray-500 font-medium text-justify'>
+                {description}
+              </p>
+            </div>
+          </div>
+        )
+      })
+    }
+  </div>
+</section>

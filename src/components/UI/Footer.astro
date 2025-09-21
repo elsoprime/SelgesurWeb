@@ -1,0 +1,46 @@
+---
+import FooterBox from './FooterBox.astro'
+---
+
+<footer
+  class='w-full bg-gradient-to-l from-gray-200 via-gray-200 to-gray-200 py-6 mt-10'
+>
+  <div
+    class='max-w-7xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 px-4'
+  >
+    <FooterBox heading='Ubicación'>
+      <p class='text-gray-400 font-light text-sm mb-2'>
+        Avenida La Florida 1234, Local 5, La Florida, Santiago, Chile
+      </p>
+      <p class='text-gray-400 font-medium text-sm mb-2'>
+        Ciudad de Castro, Isla de Chiloé, Chile
+      </p>
+    </FooterBox>
+    <FooterBox heading='Horario'>
+      <p class='text-gray-400 font-light text-sm mb-2'>
+        Lunes a Viernes: 09:00 - 18:00
+      </p>
+      <p class='text-gray-400 font-light text-sm mb-2'>Sábado: 10:00 - 14:00</p>
+      <p class='text-gray-400 font-light text-sm mb-2'>Domingo: Cerrado</p>
+    </FooterBox>
+    <FooterBox heading='Contacto'>
+      <p class='text-gray-400 font-light text-sm mb-2'>
+        Teléfono: +56 9 1234 5678
+      </p>
+      <p class='text-gray-400 font-light text-sm mb-2'>
+        Email: servicios.generacion@selgesur.cl
+      </p>
+      <p class='text-gray-400 font-light text-sm mb-2'>
+        WhatsApp: +56 9 8765 4321
+      </p>
+    </FooterBox>
+  </div>
+  <p class='text-xl text-gray-500 font-light text-center mt-6'>
+    Todos los derechos reservados. <span class='font-semibold text-orange-600'
+      >Selgesur Limitada.&copy; {new Date().getFullYear()}
+    </span>
+  </p>
+  <p class='text-center text-gray-800 text-lg mt-4 font-light'>
+    Desarrollado por <span class='font-bold'>@elsoprimeDev</span>
+  </p>
+</footer>

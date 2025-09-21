@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {ContactPageSchema} from '@/types'
+import SectionContructor from '@/components/Shared/SectionContructor.astro'
+const url = 'http://selgesur-home.local/wp-json/wp/v2/pages?slug=contacto'
+
+const response = await fetch(url)
+const json = await response.json()
+const data = ContactPageSchema.parse(json[0])
+
+//const proccesKeys = Array.from({length: 4}, (_, i) => `proyecto_${i + 1}`)
+---
+
+<Layout
+  title='sitio en construcción'
+  subtitle='Actualmente estamos trabajando en esta sección.'
+  bgImage={data.featured_images.full.url}
+>
+  <!-- Main Content -->
+  <SectionContructor />
+</Layout>

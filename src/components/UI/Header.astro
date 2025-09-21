@@ -1,0 +1,156 @@
+---
+import Logo from '@/assets/images/Logo-Selgesur.png'
+import {Image} from 'astro:assets'
+import MainNav from './MainNav.astro'
+
+// Importar todas las imágenes del slider
+import Slider001 from '@/assets/images/Slider-001.png'
+import Slider002 from '@/assets/images/Slider-002.png'
+import Slider003 from '@/assets/images/Slider-003.png'
+import Slider004 from '@/assets/images/Slider-004.png'
+import Slider005 from '@/assets/images/Slider-005.png'
+
+interface Props {
+  subtitle: string // Subtítulo obligatorio
+  bgImage?: string // Imagen individual opcional
+  useSlideshow?: boolean // Flag para usar slideshow o imagen única 
+}
+const {subtitle, bgImage, useSlideshow = false} = Astro.props
+// Array con las imágenes importadas
+const slideshowImages  = [Slider001, Slider002, Slider003, Slider004, Slider005]
+---
+
+<header class='min-h-72 relative pb-72 flex items-center justify-center'>
+  <!-- Slideshow de fondos -->
+  <div class='absolute inset-0'>
+   {useSlideshow ? (
+    <!-- Slideshow automático -->
+    <div class='absolute inset-0'>
+      {slideshowImages.map((image, index) => (
+        <div
+          class={`slideshow-bg absolute inset-0 bg-center bg-cover ${index === 0 ? 'active' : ''}`}
+          style={`background-image: url('${image.src}');`}
+        />
+      ))}
+    </div>
+  ) : (
+    <!-- Imagen única -->
+    <div
+      class='absolute inset-0 bg-center bg-cover'
+      style={`background-image: url('${bgImage}');`}
+      aria-hidden='true'
+    />
+  )}
+  </div>
+  <div class='absolute inset-0 bg-gray-950/60' aria-hidden='true'></div>
+  <!-- Logo y navegación -->
+  <div class='relative max-w-7xl mx-auto py-5'>
+    <div class='flex flex-col items-center lg:flex-row lg:justify-between'>
+      <a class='cursor-pointer' href='/'>
+        <Image
+          src={Logo}
+          width={240}
+          height={70}
+          alt='Selgesur Logo'          
+          loading='eager'
+        />
+      </a>
+      <MainNav />
+    </div>
+        <h1 class='uppercase text-4xl font-black 
+                  text-center p-6 mt-12 bg-gradient-to-r from-orange-500 via-sky-200 to-white 
+                    bg-clip-text text-transparent'> {subtitle}
+        </h1>
+  </div>
+</header>
+
+<!-- Estilos para el slideshow -->
+
+<style>
+  .slideshow-bg {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .slideshow-bg.active {
+    opacity: 1;
+  }
+
+  /* Efecto máquina de escribir */
+  .typewriter {
+    display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid #ffffff;
+    animation: 
+      typing 3.5s steps(40, end),
+      blink-caret 0.75s step-end infinite;
+    width: 0;
+    animation-fill-mode: forwards;
+  }
+
+  /* Estilo para contenido largo */
+  .typewriter-multiline {
+    white-space: normal;
+    line-height: 1.5;
+    height: 0;
+    animation: 
+      typing-multiline 3.5s steps(40, end) forwards,
+      blink-caret 0.75s step-end infinite;
+  }
+
+  @keyframes typing-multiline {
+    from { 
+      height: 0;
+      width: 0;
+    }
+    to { 
+      height: auto;
+      width: 100%;
+    }
+  }
+
+</style>
+
+<!-- Script para manejar el slideshow -->
+
+{useSlideshow && (
+  <script>
+    function initSlideshow() {
+      const slides = document.querySelectorAll('.slideshow-bg');
+      let currentSlide = 0;
+
+      // Limpiar intervalo existente si existe
+      if ((window as any).slideshowInterval) {
+        clearInterval((window as any).slideshowInterval);
+      }
+
+      if (slides.length > 1) {
+        // Resetear todas las slides
+        slides.forEach((slide, index) => {
+          slide.classList.toggle('active', index === 0);
+        });
+
+        // Iniciar nuevo intervalo
+        (window as any).slideshowInterval = setInterval(() => {
+          slides[currentSlide].classList.remove('active');
+          currentSlide = (currentSlide + 1) % slides.length;
+          slides[currentSlide].classList.add('active');
+        }, 3000);
+      }
+    }
+
+    // Ejecutar al cargar la página
+    document.addEventListener('DOMContentLoaded', initSlideshow);
+    
+    // Ejecutar después de transiciones de Astro
+    document.addEventListener('astro:page-load', initSlideshow);
+    
+    // Limpiar al salir de la página
+    document.addEventListener('astro:before-preparation', () => {
+      if ((window as any).slideshowInterval) {
+        clearInterval((window as any).slideshowInterval);
+      }
+    });
+  </script>
+)}

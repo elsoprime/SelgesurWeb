@@ -1,0 +1,115 @@
+@import 'tailwindcss';
+
+@theme {
+  --default-font-family: 'Outfit', sans-serif;
+  --primary-color-50: #f0faff;
+  --primary-color-100: #e0f4fe;
+  --primary-color-200: #b9eafe;
+  --primary-color-300: #7ccaff;
+  --primary-color-400: #36cafa;
+  --primary-color-500: #0cb4eb;
+  --primary-color-600: #009ad5;
+  --primary-color-700: #0173a3;
+  --primary-color-800: #066186;
+  --primary-color-900: #0b506f;
+  --primary-color-950: #07334a;
+  --icon-size: 6rem;
+}
+
+@utility service-icon {
+  content: '';
+  background-image: url('../assets/icons/flash.png');
+  background-size: var(--icon-size);
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 10rem;
+  height: 10rem;
+  display: block;
+  margin-inline: auto;
+}
+
+@utility about-icon {
+  content: '';
+  background-image: url('../assets/astro.svg');
+  background-size: var(--icon-size);
+  background-position: center;
+  background-repeat: no-repeat;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  display: block;
+  margin-inline: auto;
+}
+
+@utility mission-icon {
+  content: '';
+  background-image: url('../assets/icons/Mission.svg');
+  background-size: var(--icon-size);
+  background-position: center;
+  background-repeat: no-repeat;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  display: block;
+  margin-inline: auto;
+}
+
+@utility vision-icon {
+  content: '';
+  background-image: url('../assets/icons/Vision.svg');
+  background-size: var(--icon-size);
+  background-position: center;
+  background-repeat: no-repeat;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  display: block;
+  margin-inline: auto;
+}
+
+@utility font-secondary {
+  --font-mono: 'PT Sans', sans-serif;
+}
+
+/* Animación de entrada usando CSS puro */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Conexiones adicionales para desktop usando pseudo-elementos */
+@media (min-width: 1024px) {
+  .hierarchy-connections:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 2rem;
+    background: linear-gradient(to bottom, #60a5fa, #93c5fd);
+    border-radius: 2px;
+    z-index: 10;
+  }
+}
+
+/* Z-index utilities que Tailwind no incluye por defecto */
+.z-1 {
+  z-index: 1;
+}
+.z-5 {
+  z-index: 5;
+}
+.z-10 {
+  z-index: 10;
+}
+.z-20 {
+  z-index: 20;
+}

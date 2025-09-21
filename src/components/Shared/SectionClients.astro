@@ -1,0 +1,83 @@
+---
+import {Picture} from 'astro:assets'
+import {mainContentData} from '@/data'
+const {clients} = mainContentData
+---
+
+<!-- Sección Clientes -->
+<section
+  id='clientes'
+  class='py-20 relative bg-gradient-to-l from-gray-400 via-gray-200 to-gray-400'
+>
+  <!-- Encabezado de la sección -->
+  <div class='text-center mb-16'>
+    <h2 class='text-4xl md:text-5xl lg:text-6xl font-bold text-gray-700 mb-4'>
+      {clients.title.rendered}
+    </h2>
+    <p class='text-gray-500 text-lg md:text-xl lg:text-2xl font-ligh'>
+      Somos un socio estratégico de las empresas líderes del sector energético.
+    </p>
+  </div>
+
+  <!-- Grid de clientes -->
+  <div class='max-w-7xl mx-auto px-4'>
+    <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+      {
+        mainContentData.clients.acf.servicesList.map(client => (
+          <div class='group relative h-[400px] rounded-2xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:scale-[1.02]'>
+            {/* Imagen de fondo */}
+            <div
+              class='absolute rounded-3xl inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110'
+              style={`background-image: url('${client.imageCard}')`}
+            />
+
+            {/* Overlay con gradiente */}
+            <div class='absolute inset-0 bg-gradient-to-t from-black/10 via-black/40 to-transparen opacity-90 group-hover:bg-blue-950/70 transition-opacity duration-500' />
+
+            {/* Contenido */}
+            <div class='relative h-full flex flex-col justify-end p-8 '>
+              {/* Logo del cliente flotante */}
+              <div class='absolute top-6 right-6 w-32 h-32 bg-white backdrop-blur-sm rounded-full p-3 transform -translate-y-10 opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100'>
+                <Picture
+                  src={client.icon}
+                  alt={client.title}
+                  width={120}
+                  height={120}
+                  class='w-full h-full object-contain'
+                  formats={['avif', 'webp', 'png']}
+                />
+              </div>
+              <div class='flex flex-col items-center justify-center text-center'>
+                {/* Título */}
+                {/* Título centrado (visible por defecto, se oculta en hover) */}
+                <h3
+                  class={`absolute left-1/2 -translate-x-1/2 top-0 text-3xl bg-white/10 backdrop-blur-sm py-8 shadow
+                        font-bold text-white mb-3 w-full px-8text-center
+                        transition-all duration-500 opacity-100 group-hover:opacity-0`}
+                >
+                  {client.title}
+                </h3>
+
+                {/* Descripción */}
+                <p class='text-gray-300 text-center mb-6 opacity-0 transform translate-y-10 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0'>
+                  {client.description}
+                </p>
+
+                {/* Botón */}
+                <a
+                  href='#'
+                  class='inline-block bg-blue-600 text-white px-8 py-3 rounded-lg transform translate-y-10 opacity-0 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-blue-600 hover:shadow-lg hover:shadow-blue-500/50'
+                >
+                  Saber más
+                  <span class='ml-2 inline-block transform transition-transform group-hover:translate-x-1'>
+                    →
+                  </span>
+                </a>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

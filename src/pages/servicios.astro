@@ -1,0 +1,32 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {ServicesPageSchema} from '@/types'
+import {wordpressApi} from '@/api/wordpress'
+import SectionPageService from '@/components/services/SectionPageService.astro'
+/*
+  @description Usar el servicio de WordPress para obtener los datos
+  @author Esteban Soto Ojeda @elsoprimeDev
+*/
+let data: typeof ServicesPageSchema._type
+try {
+  const pageData = await wordpressApi.getServicesPage()
+  data = ServicesPageSchema.parse(pageData)
+  //  console.log('Datos de la página servicios cargados:', data)
+} catch (error) {
+  console.error('Error al cargar la página servicios:', error)
+  // Manejo de error - podrías redirigir o mostrar un mensaje
+  throw new Error('No se pudo cargar la información de la página')
+}
+const proccesKeys = Array.from({length: 4}, (_, i) => `services_${i + 1}`)
+---
+
+<Layout
+  title={data.title.rendered}
+  subtitle={data.acf.subtitle}
+  bgImage={data.featured_images.full.url}
+>
+  <!-- Sección de Servicios -->
+  <SectionPageService />
+  <!--Galeria de Servicios -->
+</Layout>

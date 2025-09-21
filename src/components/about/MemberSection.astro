@@ -1,0 +1,486 @@
+---
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {AboutPageSchema} from '@/types'
+import {wordpressApi} from '@/api/wordpress'
+//Iconos Lucide
+import { Building, Mail, Shield, PersonStandingIcon, Phone, User, GrapeIcon, ChevronDown, ChevronUp, Briefcase, Award, BellElectric } from '@lucide/astro'
+import avatarPicture from '@/assets/images/avatar.png'
+
+
+/**
+ * Obtener y validar los datos de la página "Nosotros" desde WordPress
+ * Fetch and validate "About Us" page data from WordPress
+ */
+
+let data: typeof AboutPageSchema._type
+try {
+  const pageData = await wordpressApi.getAboutPage()
+  data = AboutPageSchema.parse(pageData)
+
+  //  console.log('Datos de la página nosotros cargados:', data)
+} catch (error) {
+  console.error('Error al cargar la página nosotros:', error)
+  // Manejo de error - podrías redirigir o mostrar un mensaje
+  throw new Error('No se pudo cargar la información de la página')
+}
+// Interfaz para los datos del miembro
+interface MemberData {
+  full_name: string
+  company_role: string
+  description?: string
+  email?: string
+  telephone_number?: string
+  work_experience?: string
+  profile_picture?: string
+  achievements?: string
+}
+
+// Organizar los miembros por Jerarquía basado en sus roles
+const organizeMembersByHierarchy = (members: Record<string, MemberData>) => {
+  const hierarchyLevels = [
+    {
+      title: 'Representante Legal',
+      roles: ['Representante Legal']
+    },
+    {
+      title: 'Encargados de Departamentos',
+      roles: ['Encargado de Recursos Humanos', 'Encargado de Prevención de Riesgos', 'Encargado']
+    },
+    {
+      title: 'Administrativos',
+      roles: ['Administrativo']
+    },
+    {
+      title: 'Supervisores y Técnicos',
+      roles: ['Supervisor Electrico', 'Técnico', 'Especialista', 'Supervisor', 'Jefe', 'Coordinador']
+    },
+    {
+      title: 'Prevencionistas',
+      roles: ['Prevencionista de Riesgos',]
+    },
+    {
+      title: 'Operativos',
+      roles: ['Operador', 'Ayudante', 'Peón', 'Auxiliar']
+    }
+
+  ]
+
+  // Mapear y filtrar miembros según los niveles jerárquicos definidos
+  const organizedMembers = hierarchyLevels.map(level => ({
+    ...level,
+    members: Object.entries(members).filter(([_, member]) => 
+      level.roles.some(role => 
+        member.company_role.toLowerCase().includes(role.toLowerCase())
+      )
+    ).map(([key, member]) => ({ key, ...member }))
+  })).filter(level => level.members.length > 0)
+
+  // Agregar miembros que no encajan en ninguna categoría
+  const uncategorizedMembers = Object.entries(members).filter(([_, member]) => 
+    !hierarchyLevels.some(level => 
+      level.roles.some(role => 
+        member.company_role.toLowerCase().includes(role.toLowerCase())
+      )
+    )
+  ).map(([key, member]) => ({ key, ...member }))
+
+  if (uncategorizedMembers.length > 0) {
+    organizedMembers.push({
+      title: 'Otros Miembros',
+      roles: [],
+      members: uncategorizedMembers
+    })
+  }
+
+  return organizedMembers
+}
+
+// Obtener los miembros organizados por jerarquía para renderizar en el componente
+const hierarchicalMembers = organizeMembersByHierarchy(data.acf.organization_chart || {})
+---
+
+<section class='border-t border-gray-200 py-20'>
+  <!-- Encabezado de la sección -->
+  <div class='max-w-7xl mx-auto'>
+    <div class='text-center mb-16'>
+      <h3 class='text-4xl md:text-5xl font-bold text-gray-600 mb-6'>
+        Estructura Organizacional
+      </h3>
+      <p class='text-xl text-gray-600 max-w-3xl mx-auto'>
+        Nuestro equipo altamente calificado trabaja en conjunto para garantizar
+        la excelencia en cada proyecto
+      </p>
+    </div>
+    <!-- Contenedor del organigrama jerárquico -->
+    <div class='mx-auto px-4 lg:px-8 space-y-12 relative'>
+      {
+        hierarchicalMembers.map(async (level, levelIndex) => (
+          <div class='relative hierarchy-connections'>
+            <!-- Título del nivel jerárquico -->
+            <div class='text-center mb-8'>
+                <h4 class={`text-3xl font-bold mb-2 ${
+                levelIndex === 0 ? 'text-blue-500' : 
+                levelIndex === 1 ? 'text-green-600' : 
+                'text-gray-600'
+                }`}>{level.title}</h4>
+              <div class={`w-24 h-1 mx-auto rounded-full ${levelIndex === 0 ? 'bg-blue-500' : levelIndex === 1 ? 'bg-green-600' : 'bg-gray-600'}`}></div>
+            </div>
+            
+            <!--  Miembros del nivel -->
+            <div class={`
+              grid gap-6 justify-items-center
+              ${level.members.length === 1 ? 'grid-cols-1 justify-center' : ''}
+              ${level.members.length === 2 ? 'grid-cols-1 md:grid-cols-2' : ''}
+              ${level.title === 'Prevencionistas' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : ''}
+              ${level.members.length >= 3 && level.title !== 'Prevencionistas' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4' : ''}
+            `}>
+              {
+                level.members.map(async (member) => {
+                  // Obtener las dimensiones de la imagen de perfil
+                  const {width, height} = await inferRemoteSize(member.profile_picture || avatarPicture.src)
+                  
+                  return (
+                    <div class='group relative animate-fade-in-up opacity-0 [animation-fill-mode:forwards]' style={`animation-delay: ${level.members.findIndex(m => m.key === member.key) * 100 + 100}ms`}>
+                      <!-- Tarjeta del miembro -->
+                        <div class={`
+                        p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 
+                        transform hover:-translate-y-2 border-transparent hover:border-blue-200 
+                        max-w-xs w-full min-h-[380px] relative z-10
+                        ${levelIndex === 1 ? 'bg-gradient-to-b bg-white via-gray-100 to-gray-200' : 
+                          levelIndex === 2 ? 'bg-gradient-to-tl bg-white via-gray-100 to-gray-200' :
+                          levelIndex >= 3 ? 'bg-gradient-to-r from-gray-100 via-gray-100 to-gray-200' :
+                          'bg-gradient-to-b from-white to-gray-300'}
+                        `}>
+                        <!-- Imagen de perfil -->
+                        <div class='relative mb-4'>
+                          
+                          <Picture
+                            src={member.profile_picture || avatarPicture.src}
+                            alt={`Foto de ${member.full_name}`}
+                            width={width}
+                            height={height}
+                            class='w-28 h-28 rounded-full mx-auto object-cover border-4 border-sky-500 shadow-md transition-all duration-300 group-hover:border-amber-500'
+                            formats={['avif', 'webp', 'jpeg']}
+                          />
+                          <!-- Indicador de nivel jerárquico -->
+                            <div class='absolute -bottom-2 left-1/2 transform -translate-x-1/2'>
+                            <div class={`flex items-center justify-center${levelIndex === 0 ? ' bg-blue-500' : levelIndex === 1 ? ' bg-emerald-500' : levelIndex === 2 ? ' bg-sky-500' : levelIndex === 3 ? ' bg-rose-500' : ' bg-green-500'} rounded-full p-1 shadow-md border-2 border-blue-300`}>                            
+                              {levelIndex === 0 ? (
+                              <Building class='inline-block w-5 h-5 text-white' />
+                              ) : levelIndex === 1 ? (
+                              <PersonStandingIcon class='inline-block w-5 h-5 text-white' />
+                              ) : levelIndex === 2 ? (
+                              <User class='inline-block w-5 h-5 text-white' />
+                              ) : levelIndex === 3 ? (
+                              <BellElectric class='inline-block w-5 h-5 text-white' />
+                              ) : (
+                              <Shield class='inline-block w-5 h-5 text-white' />
+                              )}
+                            </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información del miembro -->
+                        <div class='text-center space-y-2'>
+                          <h5 class='text-xl font-bold text-blue-500 leading-tight'>{member.full_name}</h5>
+                          <p class='text-amber-600 font-semibold text-sm uppercase tracking-wide'>{member.company_role}</p>
+                          <p class='text-gray-800 text-sm font-light leading-relaxed overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical]'>{member.description}</p>
+                          <p class='text-blue-800 text-sm font-bold leading-relaxed overflow-hidden text-ellipsis [display:-webkit-box] [-webkit-line-clamp:3] [-webkit-box-orient:vertical]'>{member.work_experience}</p>
+                        </div>
+                        
+                        <!-- Línea decorativa y botón expandir -->
+                        <div class='mt-4 flex flex-col justify-center items-center'>
+                          <div class='w-12 h-0.5 bg-gradient-to-r from-blue-300 to-blue-500 rounded-full'></div>
+                          <button 
+                            class="my-4 flex items-center space-x-2 px-4 py-2 bg-blue-400 text-sm text-white rounded-full hover:bg-blue-500 transition-all duration-300 transform hover:scale-105"
+                            onclick={`toggleInfo('info-${member.key}')`}
+                          >
+                            <span>Ver más</span>
+                            <ChevronDown class='w-4 h-4 chevron-icon' />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- Panel de información adicional - FUERA de la tarjeta principal -->
+                      <div 
+                        id={`info-${member.key}`}
+                        class='absolute top-0 left-0 w-full h-full bg-white rounded-2xl p-4 opacity-0 invisible transition-all duration-500 transform scale-95 shadow-2xl z-50 overflow-y-auto border-2 border-blue-200'
+                        >
+                          <!-- Header con foto y nombre -->
+                          <div class='flex items-center space-x-3 mb-4 pb-3 border-b'>                         
+                            <div>
+                              <h6 class='font-bold text-blue-600 text-lg'>{member.full_name}</h6>
+                              <p class='text-amber-600 text-xs font-medium uppercase'>{member.company_role}</p>
+                            </div>
+                            <button 
+                              onclick={`toggleInfo('info-${member.key}')`}
+                              class='ml-auto p-1 hover:bg-gray-100 rounded-full transition-colors duration-200'
+                            >
+                              <ChevronUp class='w-5 h-5 text-gray-600' />
+                            </button>
+                          </div>
+                          
+                          <!-- Contenido detallado -->
+                          <div class='space-y-4 text-sm'>
+                            <!-- Descripción completa -->
+                            <div>
+                              <h6 class='flex items-center font-semibold text-gray-800 mb-2'>
+                                <User class='w-4 h-4 text-blue-500 mr-2' />
+                                Descripción
+                              </h6>
+                              <p class='text-gray-600 leading-relaxed text-xs'>{member.description}</p>
+                            </div>
+                            
+                            <!-- Experiencia laboral -->
+                            {member.work_experience && (
+                              <div>
+                                <h6 class='flex items-center font-semibold text-gray-800 mb-2'>
+                                  <Briefcase class='w-4 h-4 text-blue-500 mr-2' />
+                                  Experiencia
+                                </h6>
+                                <p class='text-gray-600 leading-relaxed text-xs'>{member.work_experience}</p>
+                              </div>
+                            )}
+                            
+                            <!-- Logros -->
+                            {member.achievements && (
+                              <div>
+                                <h6 class='flex items-center font-semibold text-gray-800 mb-2'>
+                                  <Award class='w-4 h-4 text-blue-500 mr-2' />
+                                  Logros
+                                </h6>
+                                <p class='text-gray-600 leading-relaxed text-xs'>{member.achievements}</p>
+                              </div>
+                            )}
+                            
+                            <!-- Contacto -->
+                            {(member.email || member.telephone_number) && (
+                              <div class='pt-3 border-t'>
+                                <h6 class='font-semibold text-gray-800 mb-3'>Contacto</h6>
+                                <div class='space-y-2'>
+                                  {member.email && (
+                                    <div class='flex items-center space-x-2'>
+                                      <div class='p-1 bg-blue-100 rounded-full'>
+                                        <Mail class='w-3 h-3 text-blue-600' />
+                                      </div>
+                                      <a 
+                                        href={`mailto:${member.email}`}
+                                        class='text-blue-600 text-xs hover:underline'
+                                      >
+                                        {member.email}
+                                      </a>
+                                    </div>
+                                  )}
+                                  
+                                  {member.telephone_number && (
+                                    <div class='flex items-center space-x-2'>
+                                      <div class='p-1 bg-green-100 rounded-full'>
+                                        <Phone class='w-3 h-3 text-green-600' />
+                                      </div>
+                                      <a 
+                                        href={`tel:${member.telephone_number}`}
+                                        class='text-green-600 text-xs hover:underline'
+                                      >
+                                        {member.telephone_number}
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      
+                      <!-- Línea de conexión (excepto para el último nivel) -->
+                      {levelIndex < hierarchicalMembers.length - 1 && (
+                        <div class='absolute top-full left-1/2 transform -translate-x-1/2 mt-4 w-0.5 h-8 bg-gradient-to-b from-blue-400 to-transparent hidden lg:block z-5 transition-all duration-300 group-hover:from-blue-500'></div>
+                      )}
+                    </div>
+                  )
+                })
+              }
+            </div>          
+
+            <!-- Línea horizontal de conexión entre niveles -->
+            {levelIndex < hierarchicalMembers.length - 1 && (
+              <div class='mt-8 hidden lg:block relative z-1'>
+                <div class='w-full h-0.5 bg-gradient-to-r from-transparent via-blue-300 to-transparent transition-all duration-300'></div>
+              </div>
+            )}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  <!-- Resumen de estructura organizacional -->
+  <div class='mt-16 max-w-3xl mx-auto px-4 text-center'>
+    <h5 class='text-2xl font-bold text-gray-700 mb-4'>Resumen de Nuestra Estructura Organizacional</h5>
+    <p class='text-gray-600 leading-relaxed text-justify'>
+      En Selgesur, nuestra estructura organizacional está diseñada para fomentar la colaboración y la eficiencia. Desde nuestro Representante Legal hasta nuestros Operativos, cada miembro del equipo desempeña un papel crucial en el éxito de nuestros proyectos. Nos enorgullece contar con profesionales altamente calificados en cada nivel jerárquico, asegurando que cada aspecto de nuestro trabajo se realice con la máxima excelencia y dedicación.
+    </p>
+  </div>
+
+</section>
+
+<style>
+  /* Animación de entrada usando CSS puro */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(2rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  /* Conexiones adicionales para desktop usando pseudo-elementos */
+  @media (min-width: 1024px) {
+    .hierarchy-connections:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      bottom: -3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 2rem;
+      background: linear-gradient(to bottom, #60a5fa, #93c5fd);
+      border-radius: 2px;
+      z-index: 10;
+    }
+  }
+
+  /* Z-index utilities que Tailwind no incluye por defecto */
+  .z-1 { z-index: 1; }
+  .z-5 { z-index: 5; }
+  .z-10 { z-index: 10; }
+  .z-20 { z-index: 20; }
+  .z-50 { z-index: 50; }
+
+  /* Estados para el panel de información expandible */
+  .info-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: scale(1) !important;
+    z-index: 100 !important;
+  }
+
+  /* Panel de información por defecto */
+  [id^="info-"] {
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* Cuando está visible, habilitar interacciones */
+  .info-visible {
+    pointer-events: auto !important;
+  }
+
+  /* Rotación del icono de chevron */
+  .chevron-rotated {
+    transform: rotate(180deg);
+  }
+
+  /* Backdrop cuando panel está abierto */
+  .info-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 40;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .info-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+  }
+</style>
+
+<script>
+  let activePanel: HTMLElement | null = null;
+  let backdrop: HTMLElement | null = null;
+
+  // Crear backdrop si no existe
+  function createBackdrop() {
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.className = 'info-backdrop';
+      backdrop.onclick = closeActivePanel;
+      document.body.appendChild(backdrop);
+    }
+  }
+
+  // Cerrar panel activo
+  function closeActivePanel() {
+    if (activePanel) {
+      activePanel.classList.remove('info-visible');
+      const button = document.querySelector(`[onclick*="${activePanel.id}"]`);
+      const chevron = button?.querySelector('.chevron-icon');
+      chevron?.classList.remove('chevron-rotated');
+      if (button) {
+        button.querySelector('span')!.textContent = 'Ver más';
+      }
+      
+      if (backdrop) {
+        backdrop.classList.remove('active');
+      }
+      
+      activePanel = null;
+    }
+  }
+
+  // Función para alternar la información adicional
+  function toggleInfo(infoId: string) {
+    const infoPanel = document.getElementById(infoId);
+    const button = document.querySelector(`[onclick*="${infoId}"]`);
+    const chevron = button?.querySelector('.chevron-icon');
+    
+    if (!infoPanel) return;
+
+    createBackdrop();
+
+    const isVisible = infoPanel.classList.contains('info-visible');
+    
+    // Cerrar panel activo si hay uno diferente
+    if (activePanel && activePanel !== infoPanel) {
+      closeActivePanel();
+    }
+    
+    if (isVisible) {
+      // Ocultar
+      closeActivePanel();
+    } else {
+      // Mostrar
+      activePanel = infoPanel;
+      infoPanel.classList.add('info-visible');
+      chevron?.classList.add('chevron-rotated');
+      if (button) {
+        button.querySelector('span')!.textContent = 'Ver menos';
+      }
+      
+      if (backdrop) {
+        backdrop.classList.add('active');
+      }
+    }
+  }
+
+  // Cerrar con tecla Escape
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && activePanel) {
+      closeActivePanel();
+    }
+  });
+
+  // Hacer la función disponible globalmente
+  (window as any).toggleInfo = toggleInfo;
+</script>

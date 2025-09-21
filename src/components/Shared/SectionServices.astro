@@ -1,0 +1,156 @@
+---
+import {Picture} from 'astro:assets'
+import {mainContentData} from '@/data'
+const {services} = mainContentData
+---
+
+<section
+  id='servicios'
+      class='py-20 relative overflow-hidden'
+      style={`background-image: linear-gradient(rgba(0,0,0,0.7),
+           rgba(30,60,114,0.8)), 
+           url('${services.featured_images.thumbnail.url.src}'); background-size: cover; background-position: center; background-attachment: fixed;`}>
+  <!-- Partículas de fondo -->
+  <div class="particles absolute inset-0"></div>
+
+  <div class='relative max-w-7xl mx-auto px-4 text-white'>
+    <!-- Encabezado con efecto -->
+    <div class='text-center mb-20 relative'>
+      <span class="absolute -top-10 left-1/2 -translate-x-1/2 text-9xl font-bold text-white/5">
+        Servicios
+      </span>
+      <h2 class='text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-white to-amber-400 text-transparent bg-clip-text'>
+        {services.title.rendered}
+      </h2>
+      <p class='text-xl md:text-3xl text-blue-200 font-light max-w-3xl mx-auto'>
+        {services.acf.subtitle}
+      </p>
+    </div>
+
+    <!-- Grid de Servicios -->
+    <div class='grid grid-cols-1 gap-10'>
+      {
+        services.acf.servicesList.map((service, index) => (
+          <div class='group relative overflow-hidden rounded-2xl backdrop-blur-sm bg-slate-800/90 border border-slate-700/50 hover:border-blue-500/50 transition-all duration-500 shadow-2xl'>
+            <!-- Imagen de fondo difuminada -->
+            <div class='absolute inset-0 transition-all duration-700'>
+              <Picture
+                src={service.imageCard}
+                width={900}
+                height={400}
+                alt={service.title}
+                class='w-full h-full object-cover opacity-10 blur-sm group-hover:opacity-15 transition-all duration-700'
+                formats={['avif', 'webp']}
+              />
+              <div class='absolute inset-0 bg-gradient-to-r from-slate-200/10 via-slate-100/10 to-white/10'></div>
+            </div>
+
+            <!-- Layout tipo imagen de referencia -->
+            <div class='relative grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 min-h-[400px]'>
+              <!-- Lado izquierdo - Imagen principal -->
+              <div class='relative rounded-xl'>
+                <Picture
+                  src={service.imageCard}
+                  width={400}
+                  height={300}
+                  alt={service.title}
+                  class='w-full h-full object-cover rounded-xl opacity-90 shadow-xl'
+                  formats={['avif', 'webp']}
+                />
+                  <div class='absolute inset-0 bg-gradient-to-tr from-slate-600/10 via-slate-900/30 to-blue-600/20'></div>
+              </div>
+
+              <!-- Lado derecho - Contenido -->
+              <div class='flex flex-col justify-center space-y-6'>
+                <!-- Título principal -->
+                <h3 class='text-3xl lg:text-4xl font-bold text-white group-hover:text-blue-300 transition-colors leading-tight'>
+                  {service.title}
+                </h3>
+
+                <!-- Descripción -->
+                <p class='text-lg text-slate-300 leading-relaxed'>
+                  {service.description}
+                </p>
+
+                <!-- Grid de características dinámicas -->
+                {services.acf.blocks && services.acf.blocks.length > 0 && (
+                  <div class='grid grid-cols-1 md:grid-cols-2 gap-4 mt-6'>
+                    {services.acf.blocks.map((block, blockIndex) => (
+                      <div class='flex items-start space-x-3'>
+                        <div class={`flex-shrink-0 w-8 h-8 ${
+                          blockIndex === 0 ? 'bg-blue-600' : 
+                          blockIndex === 1 ? 'bg-green-600' : 
+                          blockIndex === 2 ? 'bg-purple-600' : 
+                          'bg-orange-600'
+                        } rounded-lg flex items-center justify-center`}>
+                          <block.icon class='w-4 h-4 text-white' />
+                        </div>
+                        <div>
+                          <h4 class='text-lg font-semibold text-white'>{block.title}</h4>
+                          <p class='text-sm font-light text-slate-400'>{block.content}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <!-- Botón -->
+                <div class='pt-4'>
+                     <a
+                  href='/servicios/'
+                  class='inline-block bg-blue-600 text-white px-8 py-3 rounded-lg transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-white hover:text-blue-600 hover:shadow-lg hover:shadow-blue-500/50'
+                >
+                  Saber más
+                  <span class='ml-2 inline-block transform transition-transform group-hover:translate-x-1'>
+                    →
+                  </span>
+                </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+      <!-- Fin del mapeo de servicios -->      
+    </div>
+  </div>
+</section>
+
+<style>
+  .particles {
+    background-image: radial-gradient(
+        circle at 25% 25%,
+        rgba(255, 255, 255, 0.2) 1px,
+        transparent 1px
+      ),
+      radial-gradient(
+        circle at 75% 75%,
+        rgba(255, 255, 255, 0.2) 1px,
+        transparent 1px
+      );
+    background-size: 50px 50px;
+    animation: particleMove 20s linear infinite;
+  }
+
+  @keyframes particleMove {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 50px 50px;
+    }
+  }
+
+  section {
+    perspective: 1000px;
+  }
+
+  .group {
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+
+  .group:hover {
+    transform: translateZ(20px);
+  }
+</style>

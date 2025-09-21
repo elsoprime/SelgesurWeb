@@ -1,0 +1,99 @@
+---
+import Layout from '@/layouts/Layout.astro'
+import {Picture, inferRemoteSize} from 'astro:assets'
+import {ProyectosPostSchema} from '@/types'
+import SectionContructor from '@/components/Shared/SectionContructor.astro'
+const url = 'http://selgesur-home.local/wp-json/wp/v2/pages?slug=proyectos'
+const response = await fetch(url)
+const json = await response.json()
+const data = ProyectosPostSchema.parse(json[0])
+const proccesKeys = Array.from({length: 4}, (_, i) => `proyecto_${i + 1}`)
+---
+
+<Layout
+  title={data.title.rendered}
+  subtitle={data.acf.subtitle}
+  bgImage={data.featured_images.full.url}
+>
+  <!-- Main Content -->
+  <h2 class='text-5xl text-amber-400 font-black text-center mb-10'>
+    Conoce más
+    <span class='block text-4xl text-sky-500 font-bold py-4'
+      >{data.acf.section_title}
+    </span>
+  </h2>
+
+  <SectionContructor>
+    <!-- Nuestros Servicios -->
+    <div class='grid grid-cols-1 lg:grid-cols2 gap-10'>
+      <!-- Nuestros Servicios -->
+      <div>
+        <!-- Primeros 3 servicios en grid -->
+        <div class='grid grid-cols-1 md:grid-cols-3 gap-8 mb-16'>
+          {
+            proccesKeys.slice(0, 3).map(async key => {
+              const {title, description, image} = data.acf[key]
+              const {width, height} = await inferRemoteSize(image)
+
+              return (
+                <div class='flex flex-col items-center text-center bg-gray-100 p-6 rounded-lg shadow-md'>
+                  <Picture
+                    src={data.acf[key].image}
+                    alt={`Imagen del ${title}`}
+                    width={width}
+                    height={height}
+                    class='rounded-lg w-full h-48 object-cover mb-4'
+                    formats={['avif', 'webp', 'jpeg']}
+                  />
+                  <h3 class='text-2xl text-amber-400 font-bold mb-4'>
+                    {title}
+                  </h3>
+                  <p class='text-gray-700 font-light text-sm text-justify-center '>
+                    {description}
+                  </p>
+                </div>
+              )
+            })
+          }
+        </div>
+
+        <!-- Servicios restantes en dos columnas -->
+        <div class='mt-10 space-y-10'>
+          {
+            proccesKeys.slice(3).map(async (key, i) => {
+              const {title, description, image} = data.acf[key]
+              const {width, height} = await inferRemoteSize(image)
+
+              return (
+                <section class='flex gap-10 flex-col lg:flex-row items-center'>
+                  <div
+                    class={`w-full lg:w-1/2 ${i % 2 === 0 ? 'lg:order-1' : 'lg:order-2'}`}
+                  >
+                    <Picture
+                      src={data.acf[key].image}
+                      alt={`Imagen del ${title}`}
+                      width={width}
+                      height={height}
+                      class='rounded-lg'
+                      formats={['avif', 'webp', 'jpeg']}
+                    />
+                  </div>
+                  <div
+                    class={`w-full lg:w-1/2 ${i % 2 === 0 ? 'lg:order-2' : 'lg:order-1'}`}
+                  >
+                    <h3 class='text-2xl text-amber-400 font-bold mb-4'>
+                      {title}
+                    </h3>
+                    <p class='text-gray-700 font-light text-lg'>
+                      {description}
+                    </p>
+                  </div>
+                </section>
+              )
+            })
+          }
+        </div>
+      </div>
+    </div>
+  </SectionContructor>
+</Layout>

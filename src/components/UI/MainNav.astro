@@ -1,0 +1,38 @@
+---
+const navigation = [
+  {name: 'Inicio', href: '/'},
+  {name: 'Nosotros', href: '/nosotros/'},
+  {name: 'Servicios', href: '/servicios/'},
+  {name: 'Proyectos', href: '/proyectos/'},
+  {name: 'Contacto', href: '/contacto/'}
+]
+
+/**
+ * Determina si el enlace está activo basado en la ruta actual.
+ * Resalta el enlace si la ruta actual comienza con el href del enlace.
+ */
+
+const currentPath = Astro.url.pathname
+
+const isActive = (href: string) => {
+  return currentPath.startsWith(href) && href !== '/'
+    ? 'active'
+    : currentPath === href
+      ? 'active'
+      : ''
+}
+---
+
+<!-- Menu de navegacion principal -->
+<nav class='flex flex-col lg:flex-row gap-4 justify-center items-center mt-4'>
+  {
+    navigation.map(item => (
+      <a
+        href={item.href}
+        class={`${isActive(item.href) ? 'text-sky-500 font-semibold' : 'text-white hover:text-sky-500'} uppercase font-bold text-xl transition-colors duration-300`}
+      >
+        {item.name}
+      </a>
+    ))
+  }
+</nav>
