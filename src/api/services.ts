@@ -89,6 +89,28 @@ export class ApiService {
   }
 
   /**
+   * Construye la URL correctamente manejando parámetros existentes
+   */
+  private buildUrl(endpoint: string): string {
+    const baseUrl = this.config.baseUrl
+
+    // Si el endpoint ya tiene parámetros de consulta
+    if (endpoint.includes('?')) {
+      const [path, queryString] = endpoint.split('?')
+
+      // Si baseUrl ya tiene parámetros (como ?rest_route=/wp/v2)
+      if (baseUrl.includes('?')) {
+        return `${baseUrl}${path}&${queryString}`
+      } else {
+        return `${baseUrl}${endpoint}`
+      }
+    }
+
+    // Si el endpoint no tiene parámetros, concatenar normalmente
+    return `${baseUrl}${endpoint}`
+  }
+
+  /**
    * Método privado para manejar reintentos
    */
   private async requestWithRetry<T>(
@@ -98,7 +120,8 @@ export class ApiService {
     attempt = 1
   ): Promise<T> {
     try {
-      const url = `${this.config.baseUrl}${endpoint}`
+      // Construir URL correctamente cuando baseUrl ya tiene parámetros
+      const url = this.buildUrl(endpoint)
 
       // Crear AbortController para timeout
       const controller = new AbortController()

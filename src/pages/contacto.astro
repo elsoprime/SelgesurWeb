@@ -1,13 +1,37 @@
 ---
 import Layout from '@/layouts/Layout.astro'
-import {Picture, inferRemoteSize} from 'astro:assets'
-import {ContactPageSchema} from '@/types'
+import {ContactPageSchema, type ContactPageData} from '@/types'
 import SectionContructor from '@/components/Shared/SectionContructor.astro'
-const url = 'http://selgesur-home.local/wp-json/wp/v2/pages?slug=contacto'
+import {wordpressApi} from '@/api/wordpress'
 
-const response = await fetch(url)
-const json = await response.json()
-const data = ContactPageSchema.parse(json[0])
+/*
+  @description Usar el servicio de WordPress para obtener los datos con fallback
+  @author Esteban Soto Ojeda @elsoprimeDev
+*/
+let data: ContactPageData
+try {
+  const pageData = await wordpressApi.getContactPage()
+  data = ContactPageSchema.parse(pageData)
+  console.log('Datos de la página contacto cargados correctamente')
+} catch (error) {
+  console.error('Error al cargar la página contacto:', error)
+
+  // Datos de emergencia si todo falla
+  data = {
+    id: 0,
+    title: {rendered: 'Contacto'},
+    content: {rendered: '<p>Sitio Web en Construcción</p>'},
+    featured_images: {
+      thumbnail: {url: '/selgesur-icon.png', width: 150, height: 150},
+      medium: {url: '/selgesur-icon.png', width: 300, height: 300},
+      medium_large: {url: '/selgesur-icon.png', width: 768, height: 768},
+      large: {url: '/selgesur-icon.png', width: 1024, height: 1024},
+      full: {url: '/selgesur-icon.png', width: 1536, height: 1536}
+    }
+  }
+
+  console.log('Usando datos de emergencia para la página de contacto')
+}
 
 //const proccesKeys = Array.from({length: 4}, (_, i) => `proyecto_${i + 1}`)
 ---

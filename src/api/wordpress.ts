@@ -7,7 +7,11 @@
  */
 
 import {ApiService} from './services'
-import type {AboutPageSchema, ServicesPageSchema} from '@/types'
+import type {
+  AboutPageSchema,
+  ContactPageData,
+  ServicesPageSchema
+} from '@/types'
 
 // Tipos específicos para WordPress
 export interface WordPressPage {
@@ -215,6 +219,69 @@ export class WordPressApiService {
       throw new Error(
         'No se pudo cargar la información de la página "servicios"'
       )
+    }
+  }
+
+  /**
+   * Método específico para la página "Contacto" con tipado fuerte y fallback robusto
+   * @description Fetches and validates the "Contact" page data with fallback
+   * @returns Validated ContactPage data or fallback data
+   * @throws Error only if fallback data also fails
+   */
+  async getContactPage(): Promise<ContactPageData> {
+    try {
+      const page = await this.getPageBySlug('contacto')
+      console.log(
+        '✅ Página de contacto obtenida exitosamente desde WordPress API'
+      )
+      return page as unknown as ContactPageData
+    } catch (error) {
+      console.warn(
+        '⚠️ Error al obtener página "contacto" desde WordPress:',
+        error
+      )
+      console.log(
+        '🔄 Usando datos de fallback para la página de contacto basados en la API real...'
+      )
+
+      // Datos de fallback robustos basados en la respuesta real de la API
+      const fallbackData: ContactPageData = {
+        id: 52,
+        title: {rendered: 'Contacto'},
+        content: {
+          rendered: '<p>Sitio Web en Construcción - Página de Contacto</p>'
+        },
+        featured_images: {
+          thumbnail: {
+            url: 'https://selgesur.cl/wordpress/wp-content/uploads/2024/11/Energia-7-150x150.png',
+            width: 150,
+            height: 150
+          },
+          medium: {
+            url: 'https://selgesur.cl/wordpress/wp-content/uploads/2024/11/Energia-7-300x200.png',
+            width: 300,
+            height: 200
+          },
+          medium_large: {
+            url: 'https://selgesur.cl/wordpress/wp-content/uploads/2024/11/Energia-7-768x512.png',
+            width: 768,
+            height: 512
+          },
+          large: {
+            url: 'https://selgesur.cl/wordpress/wp-content/uploads/2024/11/Energia-7-1024x683.png',
+            width: 1024,
+            height: 683
+          },
+          full: {
+            url: 'https://selgesur.cl/wordpress/wp-content/uploads/2024/11/Energia-7.png',
+            width: 1536,
+            height: 1024
+          }
+        }
+      }
+
+      console.log('✅ Datos de fallback para contacto cargados correctamente')
+      return fallbackData
     }
   }
 

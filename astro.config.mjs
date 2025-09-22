@@ -2,14 +2,18 @@
 import {defineConfig} from 'astro/config'
 import tailwind from '@tailwindcss/vite'
 
+import netlify from '@astrojs/netlify'
+
 // https://astro.build/config
 export default defineConfig({
   vite: {
     plugins: [tailwind()]
   },
+
   image: {
-    domains: ['selgesur-home.local', 'tu-dominio-produccion.com']
+    domains: ['selgesur-home.local', 'selgesur.cl/wordpress']
   },
+
   // Configuración de variables de entorno
   env: {
     schema: {
@@ -31,5 +35,7 @@ export default defineConfig({
         default: 3
       }
     }
-  }
+  },
+
+  adapter: netlify()
 })
