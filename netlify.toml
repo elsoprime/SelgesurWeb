@@ -1,0 +1,48 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--prefix=/dev/null"
+
+# Configuración de redirecciones para SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Configuración de headers para optimización
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    cache-control = "public, immutable, max-age=31536000"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    cache-control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    cache-control = "public, max-age=31536000"
+
+# Headers de seguridad
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Configuración para variables de entorno (ejemplo)
+[context.production.environment]
+  PUBLIC_API_BASE_URL = "https://selgesur.cl/wordpress"
+
+[context.deploy-preview.environment]
+  PUBLIC_API_BASE_URL = "https://selgesur.cl/wordpress"
+
+[context.branch-deploy.environment]
+  PUBLIC_API_BASE_URL = "https://selgesur.cl/wordpress"
