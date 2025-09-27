@@ -192,13 +192,19 @@ export class WordPressApiService {
       const page = await this.getPageBySlug('nosotros')
 
       // Aquí puedes agregar validación con el schema si es necesario
-      // const validatedData = AboutPageSchema.parse(page);
+      //const validatedData = AboutPageSchema.parse(page);
+      console.log(
+        '✅ Página de Nosotros obtenida exitosamente desde WordPress API'
+      )
 
       return page as AboutPageData
     } catch (error) {
-      console.error('Error al obtener página "nosotros":', error)
+      console.warn(
+        '⚠️ Error al obtener página "Nosotros" desde WordPress:',
+        error
+      )
       throw new Error(
-        'No se pudo cargar la información de la página "nosotros"'
+        'No se pudo cargar la información de la página "Nosotros"'
       )
     }
   }
@@ -211,13 +217,19 @@ export class WordPressApiService {
   async getServicesPage(): Promise<ServicesPageData> {
     try {
       const page = await this.getPageBySlug('servicios')
+      console.log(
+        '✅ Página de servicios obtenida exitosamente desde WordPress API'
+      )
 
       // Aquí puedes agregar validación con el schema si es necesario
       // const validatedData = ServicesPageSchema.parse(page);
 
       return page as ServicesPageData
     } catch (error) {
-      console.error('Error al obtener página "servicios":', error)
+      console.warn(
+        '⚠️ Error al obtener página "servicios" desde WordPress:',
+        error
+      )
       throw new Error(
         'No se pudo cargar la información de la página "servicios"'
       )
