@@ -8,8 +8,10 @@
 
 import {ApiService} from './services'
 import type {
+  AboutPageData,
   AboutPageSchema,
   ContactPageData,
+  ServicesPageData,
   ServicesPageSchema
 } from '@/types'
 
@@ -185,14 +187,14 @@ export class WordPressApiService {
    * @returns Validated AboutPage data
    * @throws Error if the page cannot be loaded or validated
    */
-  async getAboutPage(): Promise<typeof AboutPageSchema._type> {
+  async getAboutPage(): Promise<AboutPageData> {
     try {
       const page = await this.getPageBySlug('nosotros')
 
       // Aquí puedes agregar validación con el schema si es necesario
       // const validatedData = AboutPageSchema.parse(page);
 
-      return page as typeof AboutPageSchema._type
+      return page as AboutPageData
     } catch (error) {
       console.error('Error al obtener página "nosotros":', error)
       throw new Error(
@@ -206,14 +208,14 @@ export class WordPressApiService {
    * @description Fetches and validates the "Services" page data
    * @returns Validated ServicesPage data
    */
-  async getServicesPage(): Promise<typeof ServicesPageSchema._type> {
+  async getServicesPage(): Promise<ServicesPageData> {
     try {
       const page = await this.getPageBySlug('servicios')
 
       // Aquí puedes agregar validación con el schema si es necesario
       // const validatedData = ServicesPageSchema.parse(page);
 
-      return page as typeof ServicesPageSchema._type
+      return page as ServicesPageData
     } catch (error) {
       console.error('Error al obtener página "servicios":', error)
       throw new Error(
